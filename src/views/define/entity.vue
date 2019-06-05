@@ -6,11 +6,11 @@
       <a-form layout="inline">
         <a-row :gutter="24">
 
-          <a-col :span="6">
+       <!--   <a-col :span="6">
             <a-form-item label="时间">
               <a-date-picker :disabledDate="disabledDate"   v-model="queryParam.SALEDATE" />
             </a-form-item>
-          </a-col>
+          </a-col>-->
      <!--     <a-col :span="6">
             <a-form-item label="年龄">
               <a-input placeholder="请输入名称查询" v-model="queryParam.age"></a-input>
@@ -22,35 +22,32 @@
             </a-form-item>
           </a-col>-->
 
-          <a-col :span="6" >
+    <!--      <a-col :span="6" >
             <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
               <a-button type="primary" @click="searchQuery" icon="search">查询</a-button>
               <a-button type="primary" @click="searchReset" icon="reload" style="margin-left: 8px">重置</a-button>
-          <!--    <a-button type="primary" @click="superQuery" icon="filter" style="margin-left: 8px">高级查询</a-button>-->
+          &lt;!&ndash;    <a-button type="primary" @click="superQuery" icon="filter" style="margin-left: 8px">高级查询</a-button>&ndash;&gt;
             </span>
-          </a-col>
-
+          </a-col>-->
         </a-row>
       </a-form>
     </div>
 
     <!-- 操作按钮区域 -->
     <div class="table-operator">
-<!--      <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>-->
-    <!--  <a-button type="primary" icon="plus" @click="jump">创建单据</a-button>
-      <a-button type="primary" icon="plus" @click="onetomany">一对多</a-button>-->
-<!--      <a-dropdown v-if="selectedRowKeys.length > 0">-->
-<!--        <a-menu slot="overlay">-->
-<!--          <a-menu-item key="1" @click="batchDel">-->
-<!--            <a-icon type="delete"/>-->
-<!--            删除-->
-<!--          </a-menu-item>-->
-<!--        </a-menu>-->
-<!--        <a-button style="margin-left: 8px"> 批量操作-->
-<!--          <a-icon type="down"/>-->
-<!--        </a-button>-->
-<!--      </a-dropdown>-->
-      <a-button type="primary" icon="download" @click="exportXls">导出</a-button>
+      <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
+      <a-button @click="handleEntProp" type="primary" icon="plus">新增实体属性</a-button>
+      <a-dropdown v-if="selectedRowKeys.length > 0">
+        <a-menu slot="overlay">
+          <a-menu-item key="1" @click="batchDel">
+            <a-icon type="delete"/>
+            删除
+          </a-menu-item>
+        </a-menu>
+        <a-button style="margin-left: 8px"> 批量操作
+          <a-icon type="down"/>
+        </a-button>
+      </a-dropdown>
     </div>
 
     <!-- table区域-begin -->
@@ -92,9 +89,13 @@
       </a-table>
     </div>
     <!-- table区域-end -->
-
+    <a-tabs defaultActiveKey="1">
+      <a-tab-pane tab="属性" key="1">
+        <property ref="property"></property>
+      </a-tab-pane>
+    </a-tabs>
     <!-- 表单区域 -->
-    <AssInfo-modal ref="AssInfoModal" @ok="modalFormOk"></AssInfo-modal>
+    <Entity-modal ref="EntityModal" @ok="modalFormOk"></Entity-modal>
 
     <!-- 一对多表单区域 -->
     <JeecgDemoTabsModal ref="jeecgDemoTabsModal" @ok="modalFormOk"></JeecgDemoTabsModal>
@@ -105,7 +106,8 @@
 </template>
 
 <script>
-  import AssInfoModal from './modules/AssInfoModal'
+  import property from './property'
+  import EntityModal from './modules/EntityModal'
   import SuperQueryModal from './modules/SuperQueryModal'
   import JeecgDemoTabsModal from './modules/JeecgDemoTabsModal'
   import {filterObj} from '@/utils/util'
@@ -113,11 +115,12 @@
   import moment from 'moment'
 /*  import {initDictOptions, filterDictText} from '@/components/dict/DictSelectUtil'*/
   export default {
-    name: "AssInfo",
+    name: "entity",
     components: {
-      AssInfoModal,
+      EntityModal,
       SuperQueryModal,
       JeecgDemoTabsModal,
+      property
     },
     data() {
       return {
@@ -139,39 +142,29 @@
             }
           },
           {
-            title: '时间',
+            title: '实物编号',
             align: "center",
-            dataIndex: 'saledate'
+            dataIndex: 'entityno'
           },
           {
-            title: '实体',
+            title: '实物类型',
             align: "center",
-            dataIndex: 'storename'
+            dataIndex: 'entitytype'
           },
           {
-            title: '当日销售',
+            title: '实物名称',
             align: "center",
-            dataIndex: 'curramt'
+            dataIndex: 'entityname'
           },
           {
-            title: '去年可比当日销售',
+            title: '创建时间',
             align: "center",
-            dataIndex: 'comamt'
+            dataIndex: 'createdate'
           },
           {
-            title: '可比增长',
+            title: '有效标志',
             align: "center",
-            dataIndex: 'comincrease'
-          },
-          {
-            title: '当月累计',
-            align: "center",
-            dataIndex: 'currsum'
-          },
-          {
-            title: '同比月度累计',
-            align: "center",
-            dataIndex: 'hissum'
+            dataIndex: 'availitymark'
           },
           {
             title: '操作',
@@ -202,27 +195,62 @@
         selectedRowKeys: [],
         selectedRows: [],
         url: {
-          list: "/ws/salereport/getSale",
+          list: "/ws/entity/list",
+          addEntProp:"/ws/entprop/addEntProp"
         },
 
       }
     },
     created() {
-      //this.loadData();
+      this.loadData();
       //初始化字典配置
      // this.initDictConfig();
     },
     methods: {
+      handleEntProp(){
 
+        var  entkeys  = this.selectedRowKeys;
+        var  propkeys = this.$refs.property.selectedRowKeys;
+        if (entkeys.length <= 0) {
+          this.$message.warning('请只选择一条实物记录！');
+          return;
+        }
+        if (entkeys.length > 1) {
+          this.$message.warning('请选择一条实物记录！');
+          return;
+        }
+
+        if (propkeys.length <= 0) {
+          this.$message.warning('请至少选择一条属性记录！');
+          return;
+        } else {
+          var id = entkeys[0];
+          var ids = "";
+          for (var a = 0; a < propkeys.length; a++) {
+            ids += propkeys[a] + ",";
+          }
+          var that = this;
+          this.$confirm({
+            title: "确认新增",
+            content: "是否新增选中数据?",
+            onOk: function () {
+              deleteAction(that.url.addEntProp, {id:id,ids: ids}).then((res) => {
+                if (res.success) {
+                  that.$message.success(res.message);
+                  that.loadData();
+                  that.onClearSelected();
+                  that.$refs.EntityModal.onClearSelected();
+                } else {
+                  that.$message.warning(res.message);
+                }
+              });
+            }
+          });
+        }
+      },
       exportXls(){
-
-
-
-
-         SALEDATE = this.getQueryParams().SALEDATE.format('YYYY-MM-DD');
-
+        var SALEDATE = this.getQueryParams().SALEDATE.format('YYYY-MM-DD');
         /*let paramsStr = encodeURI(JSON.stringify());*/
-
         let url = `${window._CONFIG['domianURL']}/ws/salereport/exportXls?SALEDATE=${SALEDATE}`;
         window.location.href = url;
       },
@@ -235,10 +263,10 @@
         var params = this.getQueryParams();//查询条件
       /*  var SALEDATE = params.SALEDATE.toString();
         alert(typeof  SALEDATE);*/
-        postAction(this.url.list, params).then((res) => {
+        getAction(this.url.list, params).then((res) => {
           if (res.success) {
-            this.dataSource = res.result;
-            alert(JSON.stringify(res.result))
+            this.dataSource = res.result.records;
+
           }
         })
       },
@@ -262,10 +290,10 @@
         });
       },*/
       getQueryParams() {
-        if(this.queryParam.SALEDATE==null){
-          this.$message.warning('请选择时间！');
-          return  false;
-        }
+        // if(this.queryParam.SALEDATE==null){
+        //   this.$message.warning('请选择时间！');
+        //   return  false;
+        // }
         var param = Object.assign({}, this.queryParam, this.isorter);
         param.field = this.getQueryField();
         param.pageNo = this.ipagination.current;
@@ -346,8 +374,8 @@
         this.$refs.jeecgDemoTabsModal.title = "编辑";
       },
       handleAdd: function () {
-        this.$refs.AssInfoModal.add();
-        this.$refs.AssInfoModal.title = "新增";
+        this.$refs.EntityModal.add();
+        this.$refs.EntityModal.title = "新增";
       },
       handleTableChange(pagination, filters, sorter) {
         //分页、排序、筛选变化时触发

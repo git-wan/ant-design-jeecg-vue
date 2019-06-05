@@ -64,7 +64,7 @@
           :wrapperCol="wrapperCol"
           label="评语"
           hasFeedback>
-          <a-textarea placeholder="请输入评语" v-decorator="['remark', {rules: [{required: true, message: '请输入评语！'}]}]"/>
+          <a-input placeholder="请输入评语" v-decorator="['remark', {rules: [{required: true, message: '请输入评语！'}]}]"/>
         </a-form-item>
       </a-form>
     </a-spin>

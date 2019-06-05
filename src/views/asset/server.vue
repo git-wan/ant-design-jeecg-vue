@@ -7,8 +7,8 @@
         <a-row :gutter="24">
 
           <a-col :span="6">
-            <a-form-item label="时间">
-              <a-date-picker :disabledDate="disabledDate"   v-model="queryParam.SALEDATE" />
+            <a-form-item label="名称">
+              <a-input placeholder="请输入名称查询" v-model="queryParam.asstype"></a-input>
             </a-form-item>
           </a-col>
      <!--     <a-col :span="6">
@@ -36,21 +36,20 @@
 
     <!-- 操作按钮区域 -->
     <div class="table-operator">
-<!--      <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>-->
+      <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
     <!--  <a-button type="primary" icon="plus" @click="jump">创建单据</a-button>
       <a-button type="primary" icon="plus" @click="onetomany">一对多</a-button>-->
-<!--      <a-dropdown v-if="selectedRowKeys.length > 0">-->
-<!--        <a-menu slot="overlay">-->
-<!--          <a-menu-item key="1" @click="batchDel">-->
-<!--            <a-icon type="delete"/>-->
-<!--            删除-->
-<!--          </a-menu-item>-->
-<!--        </a-menu>-->
-<!--        <a-button style="margin-left: 8px"> 批量操作-->
-<!--          <a-icon type="down"/>-->
-<!--        </a-button>-->
-<!--      </a-dropdown>-->
-      <a-button type="primary" icon="download" @click="exportXls">导出</a-button>
+      <a-dropdown v-if="selectedRowKeys.length > 0">
+        <a-menu slot="overlay">
+          <a-menu-item key="1" @click="batchDel">
+            <a-icon type="delete"/>
+            删除
+          </a-menu-item>
+        </a-menu>
+        <a-button style="margin-left: 8px"> 批量操作
+          <a-icon type="down"/>
+        </a-button>
+      </a-dropdown>
     </div>
 
     <!-- table区域-begin -->
@@ -94,7 +93,7 @@
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
-    <AssInfo-modal ref="AssInfoModal" @ok="modalFormOk"></AssInfo-modal>
+    <Server-modal ref="AssInfoModal" @ok="modalFormOk"></Server-modal>
 
     <!-- 一对多表单区域 -->
     <JeecgDemoTabsModal ref="jeecgDemoTabsModal" @ok="modalFormOk"></JeecgDemoTabsModal>
@@ -105,17 +104,16 @@
 </template>
 
 <script>
-  import AssInfoModal from './modules/AssInfoModal'
+  import ServerModal from './modules/ServerModal'
   import SuperQueryModal from './modules/SuperQueryModal'
   import JeecgDemoTabsModal from './modules/JeecgDemoTabsModal'
   import {filterObj} from '@/utils/util'
   import {deleteAction, getAction, postAction} from '@/api/manage'
-  import moment from 'moment'
 /*  import {initDictOptions, filterDictText} from '@/components/dict/DictSelectUtil'*/
   export default {
     name: "AssInfo",
     components: {
-      AssInfoModal,
+      ServerModal,
       SuperQueryModal,
       JeecgDemoTabsModal,
     },
@@ -139,39 +137,29 @@
             }
           },
           {
-            title: '时间',
+            title: '机柜名称',
             align: "center",
-            dataIndex: 'saledate'
+            dataIndex: 'cabinet'
           },
           {
-            title: '实体',
+            title: '应用系统',
             align: "center",
-            dataIndex: 'storename'
+            dataIndex: 'application'
           },
           {
-            title: '当日销售',
+            title: '品牌',
             align: "center",
-            dataIndex: 'curramt'
+            dataIndex: 'brand'
           },
           {
-            title: '去年可比当日销售',
+            title: '操作系统',
             align: "center",
-            dataIndex: 'comamt'
+            dataIndex: 'sys'
           },
           {
-            title: '可比增长',
+            title: '备注',
             align: "center",
-            dataIndex: 'comincrease'
-          },
-          {
-            title: '当月累计',
-            align: "center",
-            dataIndex: 'currsum'
-          },
-          {
-            title: '同比月度累计',
-            align: "center",
-            dataIndex: 'hissum'
+            dataIndex: 'note'
           },
           {
             title: '操作',
@@ -194,7 +182,7 @@
           showSizeChanger: true,
           total: 0
         },
-   /*     isorter: {
+ /*       isorter: {
           column: 'score',
           order: 'desc',
         },*/
@@ -202,43 +190,29 @@
         selectedRowKeys: [],
         selectedRows: [],
         url: {
-          list: "/ws/salereport/getSale",
+          list: "/ws/server/list",
+          delete: "/ws/server/delete",
+          deleteBatch: "/ws/server/deleteBatch",
         },
 
       }
     },
     created() {
-      //this.loadData();
+      this.loadData();
       //初始化字典配置
      // this.initDictConfig();
     },
     methods: {
-
-      exportXls(){
-
-
-
-
-         SALEDATE = this.getQueryParams().SALEDATE.format('YYYY-MM-DD');
-
-        /*let paramsStr = encodeURI(JSON.stringify());*/
-
-        let url = `${window._CONFIG['domianURL']}/ws/salereport/exportXls?SALEDATE=${SALEDATE}`;
-        window.location.href = url;
-      },
-
       loadData(arg) {
         //加载数据 若传入参数1则加载第一页的内容
         if (arg === 1) {
           this.ipagination.current = 1;
         }
         var params = this.getQueryParams();//查询条件
-      /*  var SALEDATE = params.SALEDATE.toString();
-        alert(typeof  SALEDATE);*/
-        postAction(this.url.list, params).then((res) => {
+        getAction(this.url.list, params).then((res) => {
           if (res.success) {
-            this.dataSource = res.result;
-            alert(JSON.stringify(res.result))
+            this.dataSource = res.result.records;
+            this.ipagination.total = res.result.total;
           }
         })
       },
@@ -262,10 +236,6 @@
         });
       },*/
       getQueryParams() {
-        if(this.queryParam.SALEDATE==null){
-          this.$message.warning('请选择时间！');
-          return  false;
-        }
         var param = Object.assign({}, this.queryParam, this.isorter);
         param.field = this.getQueryField();
         param.pageNo = this.ipagination.current;
@@ -363,11 +333,6 @@
       modalFormOk() {
         // 新增/修改 成功时，重载列表
         this.loadData();
-      },
-
-      disabledDate(current) {
-        // Can not select days before today and today
-        return current && current > moment().endOf('day');
       },
       //跳转单据页面
       jump() {

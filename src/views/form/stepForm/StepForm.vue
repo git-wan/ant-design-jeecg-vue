@@ -53,7 +53,6 @@
     }
   }
 </script>
-
 <style lang="scss" scoped>
   .steps {
     max-width: 750px;

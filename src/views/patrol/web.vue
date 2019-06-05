@@ -50,7 +50,7 @@
 <!--          <a-icon type="down"/>-->
 <!--        </a-button>-->
 <!--      </a-dropdown>-->
-      <a-button type="primary" icon="download" @click="exportXls">导出</a-button>
+     <!-- <a-button type="primary" icon="download" @click="exportXls">导出</a-button>-->
     </div>
 
     <!-- table区域-begin -->
@@ -72,7 +72,11 @@
         :loading="loading"
         :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
         @change="handleTableChange">
-
+        <template
+          slot="status"
+          slot-scope="status">
+          <a-badge :status="status" :text="status | statusFilter"/>
+        </template>
         <span slot="action" slot-scope="text, record">
           <a @click="handleEdit(record)">编辑</a>
 
@@ -139,39 +143,30 @@
             }
           },
           {
-            title: '时间',
+            title: '实物编号',
             align: "center",
-            dataIndex: 'saledate'
+            dataIndex: 'entityno'
           },
           {
-            title: '实体',
+            title: '实物名称',
             align: "center",
-            dataIndex: 'storename'
+            dataIndex: 'entityname'
           },
           {
-            title: '当日销售',
+            title: '属性值',
             align: "center",
-            dataIndex: 'curramt'
+            dataIndex: 'propertyvalue'
           },
           {
-            title: '去年可比当日销售',
+            title: '属性取值',
             align: "center",
-            dataIndex: 'comamt'
+            dataIndex: 'propertychar'
           },
           {
-            title: '可比增长',
+            title: '状态',
             align: "center",
-            dataIndex: 'comincrease'
-          },
-          {
-            title: '当月累计',
-            align: "center",
-            dataIndex: 'currsum'
-          },
-          {
-            title: '同比月度累计',
-            align: "center",
-            dataIndex: 'hissum'
+            dataIndex: 'status',
+            scopedSlots: { customRender: 'status' },
           },
           {
             title: '操作',
@@ -202,44 +197,30 @@
         selectedRowKeys: [],
         selectedRows: [],
         url: {
-          list: "/ws/salereport/getSale",
+          list: "/ws/web/webStatus",
         },
 
       }
     },
     created() {
-      //this.loadData();
+      this.loadData();
       //初始化字典配置
      // this.initDictConfig();
     },
     methods: {
-
-      exportXls(){
-
-
-
-
-         SALEDATE = this.getQueryParams().SALEDATE.format('YYYY-MM-DD');
-
-        /*let paramsStr = encodeURI(JSON.stringify());*/
-
-        let url = `${window._CONFIG['domianURL']}/ws/salereport/exportXls?SALEDATE=${SALEDATE}`;
-        window.location.href = url;
-      },
-
       loadData(arg) {
         //加载数据 若传入参数1则加载第一页的内容
         if (arg === 1) {
           this.ipagination.current = 1;
         }
-        var params = this.getQueryParams();//查询条件
+        //var params = this.getQueryParams();//查询条件
       /*  var SALEDATE = params.SALEDATE.toString();
         alert(typeof  SALEDATE);*/
-        postAction(this.url.list, params).then((res) => {
-          if (res.success) {
-            this.dataSource = res.result;
-            alert(JSON.stringify(res.result))
-          }
+        getAction(this.url.list, null).then((res) => {
+          // if (res.success) {
+            this.dataSource = res;
+            alert(JSON.stringify(res))
+          // }
         })
       },
       handleSuperQuery(arg) {//高级查询方法
@@ -373,7 +354,16 @@
       jump() {
         this.$router.push({path: '/jeecg/helloworld'})
       }
-    }
+    },
+    filters: {
+      statusFilter(status) {
+        const statusMap = {
+          'success': 'OK',
+          'failed': 'ERROR'
+        }
+        return statusMap[status]
+      }
+    },
   }
 </script>
 <style scoped>

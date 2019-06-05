@@ -7,8 +7,10 @@
         <a-row :gutter="24">
 
           <a-col :span="6">
-            <a-form-item label="时间">
-              <a-date-picker :disabledDate="disabledDate"   v-model="queryParam.SALEDATE" />
+            <a-form-item label="数据库">
+              <a-select v-model="queryParam.entityname" placeholder="请选择数据库">
+                <a-select-option :entitynames="entitynames" v-for="d in entitynames" :value="d.entityname">{{d.entityname}}</a-select-option>
+              </a-select>
             </a-form-item>
           </a-col>
      <!--     <a-col :span="6">
@@ -50,16 +52,16 @@
 <!--          <a-icon type="down"/>-->
 <!--        </a-button>-->
 <!--      </a-dropdown>-->
-      <a-button type="primary" icon="download" @click="exportXls">导出</a-button>
+      <!--<a-button type="primary" icon="download" @click="exportXls">导出</a-button>-->
     </div>
 
     <!-- table区域-begin -->
     <div>
-      <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
+     <!-- <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
         <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择 <a style="font-weight: 600">{{
         selectedRowKeys.length }}</a>项
         <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-      </div>
+      </div>-->
 
       <a-table
         ref="table"
@@ -139,45 +141,24 @@
             }
           },
           {
-            title: '时间',
+            title: '表空间名称',
             align: "center",
-            dataIndex: 'saledate'
+            dataIndex: 'TABLENAME'
           },
           {
-            title: '实体',
+            title: '表空间大小M',
             align: "center",
-            dataIndex: 'storename'
+            dataIndex: 'TABLESIZE'
           },
           {
-            title: '当日销售',
+            title: '已使用M',
             align: "center",
-            dataIndex: 'curramt'
+            dataIndex: 'USED'
           },
           {
-            title: '去年可比当日销售',
+            title: '利用率',
             align: "center",
-            dataIndex: 'comamt'
-          },
-          {
-            title: '可比增长',
-            align: "center",
-            dataIndex: 'comincrease'
-          },
-          {
-            title: '当月累计',
-            align: "center",
-            dataIndex: 'currsum'
-          },
-          {
-            title: '同比月度累计',
-            align: "center",
-            dataIndex: 'hissum'
-          },
-          {
-            title: '操作',
-            dataIndex: 'action',
-            align: "center",
-            scopedSlots: {customRender: 'action'},
+            dataIndex: 'UTILIZATION'
           }
         ],
         //数据集
@@ -194,38 +175,27 @@
           showSizeChanger: true,
           total: 0
         },
-   /*     isorter: {
-          column: 'score',
-          order: 'desc',
-        },*/
+
+        entitynames:{},
         loading: false,
         selectedRowKeys: [],
         selectedRows: [],
         url: {
-          list: "/ws/salereport/getSale",
+          list: "/ws/tablespace/getTablespace",
+          getTables: "/ws/tablespace/getTables",
         },
 
       }
     },
     created() {
+      this.initDictConfig();
       //this.loadData();
       //初始化字典配置
-     // this.initDictConfig();
+
     },
     methods: {
 
-      exportXls(){
 
-
-
-
-         SALEDATE = this.getQueryParams().SALEDATE.format('YYYY-MM-DD');
-
-        /*let paramsStr = encodeURI(JSON.stringify());*/
-
-        let url = `${window._CONFIG['domianURL']}/ws/salereport/exportXls?SALEDATE=${SALEDATE}`;
-        window.location.href = url;
-      },
 
       loadData(arg) {
         //加载数据 若传入参数1则加载第一页的内容
@@ -235,7 +205,7 @@
         var params = this.getQueryParams();//查询条件
       /*  var SALEDATE = params.SALEDATE.toString();
         alert(typeof  SALEDATE);*/
-        postAction(this.url.list, params).then((res) => {
+        getAction(this.url.list, params).then((res) => {
           if (res.success) {
             this.dataSource = res.result;
             alert(JSON.stringify(res.result))
@@ -253,16 +223,17 @@
           }
         })
       },
-      /*initDictConfig() {
-        //初始化字典 - 性别
-        initDictOptions('sex').then((res) => {
+      initDictConfig() {
+        getAction(this.url.getTables, null).then((res) => {
           if (res.success) {
-            this.sexDictOptions = res.result;
+            this.entitynames = res.result;
+          }else{
+            this.$message.warn(res.message);
           }
-        });
-      },*/
+        })
+      },
       getQueryParams() {
-        if(this.queryParam.SALEDATE==null){
+        if(this.queryParam.entityname==null){
           this.$message.warning('请选择时间！');
           return  false;
         }
