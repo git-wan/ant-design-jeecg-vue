@@ -1,12 +1,65 @@
 <template>
   <a-card :bordered="false"><!--:bordered="false"-->
 
+    <!-- 查询区域 -->
+    <div class="table-page-search-wrapper">
+      <a-form layout="inline">
+        <a-row :gutter="24">
+
+          <a-col :span="6">
+            <a-form-item label="名称">
+              <a-input placeholder="请输入名称查询" v-model="queryParam.asstype"></a-input>
+            </a-form-item>
+          </a-col>
+     <!--     <a-col :span="6">
+            <a-form-item label="年龄">
+              <a-input placeholder="请输入名称查询" v-model="queryParam.age"></a-input>
+            </a-form-item>
+          </a-col>
+          <a-col :span="6">
+            <a-form-item label="性别">
+              <DictSelectTag v-model="queryParam.sex" placeholder="请输入用户性别" dictCode="sex"/>
+            </a-form-item>
+          </a-col>-->
+
+          <a-col :span="6" >
+            <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
+              <a-button type="primary" @click="searchQuery" icon="search">查询</a-button>
+              <a-button type="primary" @click="searchReset" icon="reload" style="margin-left: 8px">重置</a-button>
+          <!--    <a-button type="primary" @click="superQuery" icon="filter" style="margin-left: 8px">高级查询</a-button>-->
+            </span>
+          </a-col>
+
+        </a-row>
+      </a-form>
+    </div>
+
+    <!-- 操作按钮区域 -->
     <div class="table-operator">
-      <a-button @click="searchReset" type="primary" icon="redo">刷新</a-button>
+      <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>
+    <!--  <a-button type="primary" icon="plus" @click="jump">创建单据</a-button>
+      <a-button type="primary" icon="plus" @click="onetomany">一对多</a-button>-->
+      <a-dropdown v-if="selectedRowKeys.length > 0">
+        <a-menu slot="overlay">
+          <a-menu-item key="1" @click="batchDel">
+            <a-icon type="delete"/>
+            删除
+          </a-menu-item>
+        </a-menu>
+        <a-button style="margin-left: 8px"> 批量操作
+          <a-icon type="down"/>
+        </a-button>
+      </a-dropdown>
     </div>
 
     <!-- table区域-begin -->
     <div>
+      <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
+        <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择 <a style="font-weight: 600">{{
+        selectedRowKeys.length }}</a>项
+        <a style="margin-left: 24px" @click="onClearSelected">清空</a>
+      </div>
+
       <a-table
         ref="table"
         size="middle"
@@ -18,12 +71,8 @@
         :loading="loading"
         :rowSelection="{selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
         @change="handleTableChange">
-        <template
-          slot="status"
-          slot-scope="status">
-          <a-badge :status="status" :text="status | statusFilter"/>
-        </template>
-      <!--  <span slot="action" slot-scope="text, record">
+
+        <span slot="action" slot-scope="text, record">
           <a @click="handleEdit(record)">编辑</a>
 
           <a-divider type="vertical"/>
@@ -37,33 +86,37 @@
               </a-menu-item>
             </a-menu>
           </a-dropdown>
-        </span>-->
+        </span>
 
       </a-table>
     </div>
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
-    <Error-modal ref="ErrorModal" @ok="modalFormOk"></Error-modal>
+    <Duty-modal ref="DutyModal" @ok="modalFormOk"></Duty-modal>
 
+    <!-- 一对多表单区域 -->
+<!--    <JeecgDemoTabsModal ref="jeecgDemoTabsModal" @ok="modalFormOk"></JeecgDemoTabsModal>-->
 
+    <!-- 高级查询区域 -->
+<!--    <superQueryModal ref="superQueryModal" @ok="modalFormOk" @handleSuperQuery="handleSuperQuery"></superQueryModal>-->
   </a-card>
 </template>
 
 <script>
-  import ErrorModal from './modules/ErrorModal'
+  import DutyModal from './modules/DutyModal'
   import {filterObj} from '@/utils/util'
   import {deleteAction, getAction, postAction} from '@/api/manage'
-  import moment from 'moment'
-  /*  import {initDictOptions, filterDictText} from '@/components/dict/DictSelectUtil'*/
+/*  import {initDictOptions, filterDictText} from '@/components/dict/DictSelectUtil'*/
+  import { mapGetters } from 'vuex'
   export default {
     name: "AssInfo",
     components: {
-      ErrorModal,
+      DutyModal,
     },
     data() {
       return {
-        description: '用户管理页面',
+        description: '值班界面',
         // 查询条件
         queryParam: {},
         //字典数组缓存
@@ -81,37 +134,36 @@
             }
           },
           {
-            title: '实物编号',
+            title: '值班日期',
             align: "center",
-            dataIndex: 'entityno'
+            dataIndex: 'dutydate'
           },
           {
-            title: '实物名称',
+            title: '值班人',
             align: "center",
-            dataIndex: 'entityname'
+            dataIndex: 'watcher'
           },
           {
-            title: '属性值',
+            title: '记录时间',
             align: "center",
-            dataIndex: 'propertyvalue'
+            dataIndex: 'rdate'
           },
           {
-            title: '属性取值',
+            title: '值班类型',
             align: "center",
-            dataIndex: 'propertychar'
+            dataIndex: 'dutytype'
           },
           {
-            title: '状态',
+            title: '异常日志',
             align: "center",
-            dataIndex: 'status',
-            scopedSlots: { customRender: 'status' },
+            dataIndex: 'errorlog'
           },
-         /* {
+          {
             title: '操作',
             dataIndex: 'action',
             align: "center",
             scopedSlots: {customRender: 'action'},
-          }*/
+          }
         ],
         //数据集
         dataSource: [],
@@ -127,54 +179,39 @@
           showSizeChanger: true,
           total: 0
         },
-        /*     isorter: {
-               column: 'score',
-               order: 'desc',
-             },*/
+        isorter: {
+          column: 'dutydate',
+          order: 'desc',
+        },
         loading: false,
         selectedRowKeys: [],
         selectedRows: [],
         url: {
-          list: "/ws/web/webStatus",
+          list: "/ws/duty/list",
+          delete: "/ws/duty/delete",
+          deleteBatch: "/ws/duty/deleteBatch",
         },
+
       }
     },
     created() {
       this.loadData();
       //初始化字典配置
-      // this.initDictConfig();
+     // this.initDictConfig();
     },
     methods: {
+      ...mapGetters(['nickname', 'avatar']),
       loadData(arg) {
         //加载数据 若传入参数1则加载第一页的内容
         if (arg === 1) {
           this.ipagination.current = 1;
         }
-        //var params = this.getQueryParams();//查询条件
-        /*  var SALEDATE = params.SALEDATE.toString();
-          alert(typeof  SALEDATE);*/
-        getAction(this.url.list, null).then((res) => {
-          // if (res.success) {
-         // this.dataSource = res;
-          // alert(JSON.stringify(res))
-          // }
+        var params = this.getQueryParams();//查询条件
+        getAction(this.url.list, params).then((res) => {
           if (res.success) {
-            this.dataSource = res.result;
-            var errorModel = this.$refs.ErrorModal;
-            var datas = errorModel.dataSource;
-            datas.length = 0 ;
-            var jsons = res.result;
-            for (var i  in jsons) {
-              if(jsons[i].status=="error"){
-                datas.push(jsons[i])
-              }
-            }
-            if(datas.length>0){
-              errorModel.visible=true
-            }
-
+            this.dataSource = res.result.records;
+            this.ipagination.total = res.result.total;
           }
-
         })
       },
       handleSuperQuery(arg) {//高级查询方法
@@ -197,10 +234,6 @@
         });
       },*/
       getQueryParams() {
-        if(this.queryParam.SALEDATE==null){
-          this.$message.warning('请选择时间！');
-          return  false;
-        }
         var param = Object.assign({}, this.queryParam, this.isorter);
         param.field = this.getQueryField();
         param.pageNo = this.ipagination.current;
@@ -273,15 +306,16 @@
         });
       },
       handleEdit: function (record) {
-        this.$refs.AssInfoModal.edit(record);
-        this.$refs.AssInfoModal.title = "编辑";
+        this.$refs.DutyModal.edit(record);
+        this.$refs.DutyModal.title = "编辑";
       },
       onetomany: function (record) {
         this.$refs.jeecgDemoTabsModal.add();
         this.$refs.jeecgDemoTabsModal.title = "编辑";
       },
       handleAdd: function () {
-        window.location.reload();
+        this.$refs.DutyModal.add();
+        this.$refs.DutyModal.title = "值班记录";
       },
       handleTableChange(pagination, filters, sorter) {
         //分页、排序、筛选变化时触发
@@ -298,50 +332,44 @@
         // 新增/修改 成功时，重载列表
         this.loadData();
       },
-      disabledDate(current) {
-        // Can not select days before today and today
-        return current && current > moment().endOf('day');
-      },
       //跳转单据页面
       jump() {
         this.$router.push({path: '/jeecg/helloworld'})
       }
-    },
-    filters: {
-      statusFilter(status) {
-        const statusMap = {
-          'success': 'OK',
-          'failed': 'ERROR'
-        }
-        return statusMap[status]
-      }
-    },
+    }
   }
 </script>
 <style scoped>
   .ant-card-body .table-operator {
     margin-bottom: 18px;
   }
+
   .ant-layout-content {
     margin: 12px 16px 0 !important;
   }
+
   .ant-table-tbody .ant-table-row td {
     padding-top: 15px;
     padding-bottom: 15px;
   }
+
   .anty-row-operator button {
     margin: 0 5px
   }
+
   .ant-btn-danger {
     background-color: #ffffff
   }
+
   .ant-modal-cust-warp {
     height: 100%
   }
+
   .ant-modal-cust-warp .ant-modal-body {
     height: calc(100% - 110px) !important;
     overflow-y: auto
   }
+
   .ant-modal-cust-warp .ant-modal-content {
     height: 90% !important;
     overflow-y: hidden

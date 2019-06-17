@@ -96,30 +96,20 @@
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
-    <AssInfo-modal ref="AssInfoModal" @ok="modalFormOk"></AssInfo-modal>
 
-    <!-- 一对多表单区域 -->
-    <JeecgDemoTabsModal ref="jeecgDemoTabsModal" @ok="modalFormOk"></JeecgDemoTabsModal>
 
-    <!-- 高级查询区域 -->
-    <superQueryModal ref="superQueryModal" @ok="modalFormOk" @handleSuperQuery="handleSuperQuery"></superQueryModal>
+
   </a-card>
 </template>
 
 <script>
-  import AssInfoModal from './modules/AssInfoModal'
-  import SuperQueryModal from './modules/SuperQueryModal'
-  import JeecgDemoTabsModal from './modules/JeecgDemoTabsModal'
   import {filterObj} from '@/utils/util'
   import {deleteAction, getAction, postAction} from '@/api/manage'
   import moment from 'moment'
-/*  import {initDictOptions, filterDictText} from '@/components/dict/DictSelectUtil'*/
   export default {
     name: "AssInfo",
     components: {
-      AssInfoModal,
-      SuperQueryModal,
-      JeecgDemoTabsModal,
+
     },
     data() {
       return {
@@ -208,7 +198,9 @@
         getAction(this.url.list, params).then((res) => {
           if (res.success) {
             this.dataSource = res.result;
-            alert(JSON.stringify(res.result))
+         /*   alert(JSON.stringify(res.result))*/
+          }else{
+            this.$message.error(res.message);
           }
         })
       },
@@ -233,10 +225,10 @@
         })
       },
       getQueryParams() {
-        if(this.queryParam.entityname==null){
+     /*   if(this.queryParam.entityname==null){
           this.$message.warning('请选择时间！');
           return  false;
-        }
+        }*/
         var param = Object.assign({}, this.queryParam, this.isorter);
         param.field = this.getQueryField();
         param.pageNo = this.ipagination.current;

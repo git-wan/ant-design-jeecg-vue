@@ -239,7 +239,7 @@
                   that.$message.success(res.message);
                   that.loadData();
                   that.onClearSelected();
-                  that.$refs.EntityModal.onClearSelected();
+                  that.$refs.property.onClearSelected();
                 } else {
                   that.$message.warning(res.message);
                 }
@@ -366,8 +366,8 @@
         });
       },
       handleEdit: function (record) {
-        this.$refs.AssInfoModal.edit(record);
-        this.$refs.AssInfoModal.title = "编辑";
+        this.$refs.EntityModal.edit(record);
+        this.$refs.EntityModal.title = "编辑";
       },
       onetomany: function (record) {
         this.$refs.jeecgDemoTabsModal.add();

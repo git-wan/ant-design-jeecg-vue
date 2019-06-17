@@ -110,8 +110,8 @@
 
         <a-form-item
           v-show="show"
-          :labelCol="labelCol"
-          :wrapperCol="wrapperCol"
+          :labelCol="labelCol1"
+          :wrapperCol="wrapperCol1"
           label="聚合路由">
           <a-switch checkedChildren="是" unCheckedChildren="否" v-model="alwaysShow"/>
         </a-form-item>
@@ -163,7 +163,14 @@
           xs: { span: 24 },
           sm: { span: 16 },
         },
-
+        labelCol1: {
+          xs: { span: 24},
+          sm: { span: 5 },
+        },
+        wrapperCol1: {
+          xs: { span: 24 },
+          sm: { span: 16 },
+        },
         confirmLoading: false,
         form: this.$form.createForm(this),
         validatorRules:{

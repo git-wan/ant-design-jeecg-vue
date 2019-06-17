@@ -1,65 +1,10 @@
 <template>
   <a-card :bordered="false"><!--:bordered="false"-->
-
-    <!-- 查询区域 -->
-    <div class="table-page-search-wrapper">
-      <a-form layout="inline">
-        <a-row :gutter="24">
-
-          <a-col :span="6">
-            <a-form-item label="时间">
-              <a-date-picker :disabledDate="disabledDate"   v-model="queryParam.SALEDATE" />
-            </a-form-item>
-          </a-col>
-     <!--     <a-col :span="6">
-            <a-form-item label="年龄">
-              <a-input placeholder="请输入名称查询" v-model="queryParam.age"></a-input>
-            </a-form-item>
-          </a-col>
-          <a-col :span="6">
-            <a-form-item label="性别">
-              <DictSelectTag v-model="queryParam.sex" placeholder="请输入用户性别" dictCode="sex"/>
-            </a-form-item>
-          </a-col>-->
-
-          <a-col :span="6" >
-            <span style="float: left;overflow: hidden;" class="table-page-search-submitButtons">
-              <a-button type="primary" @click="searchQuery" icon="search">查询</a-button>
-              <a-button type="primary" @click="searchReset" icon="reload" style="margin-left: 8px">重置</a-button>
-          <!--    <a-button type="primary" @click="superQuery" icon="filter" style="margin-left: 8px">高级查询</a-button>-->
-            </span>
-          </a-col>
-
-        </a-row>
-      </a-form>
-    </div>
-
-    <!-- 操作按钮区域 -->
     <div class="table-operator">
-<!--      <a-button @click="handleAdd" type="primary" icon="plus">新增</a-button>-->
-    <!--  <a-button type="primary" icon="plus" @click="jump">创建单据</a-button>
-      <a-button type="primary" icon="plus" @click="onetomany">一对多</a-button>-->
-<!--      <a-dropdown v-if="selectedRowKeys.length > 0">-->
-<!--        <a-menu slot="overlay">-->
-<!--          <a-menu-item key="1" @click="batchDel">-->
-<!--            <a-icon type="delete"/>-->
-<!--            删除-->
-<!--          </a-menu-item>-->
-<!--        </a-menu>-->
-<!--        <a-button style="margin-left: 8px"> 批量操作-->
-<!--          <a-icon type="down"/>-->
-<!--        </a-button>-->
-<!--      </a-dropdown>-->
-<!--      <a-button type="primary" icon="download" @click="exportXls">导出</a-button>-->
+      <a-button @click="searchReset" type="primary" icon="redo">刷新</a-button>
     </div>
-
     <!-- table区域-begin -->
     <div>
-      <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
-        <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择 <a style="font-weight: 600">{{
-        selectedRowKeys.length }}</a>项
-        <a style="margin-left: 24px" @click="onClearSelected">清空</a>
-      </div>
 
       <a-table
         ref="table"
@@ -77,55 +22,30 @@
           slot-scope="status">
           <a-badge :status="status" :text="status | statusFilter"/>
         </template>
-        <span slot="action" slot-scope="text, record">
-          <a @click="handleEdit(record)">编辑</a>
-
-          <a-divider type="vertical"/>
-          <a-dropdown>
-            <a class="ant-dropdown-link">更多 <a-icon type="down"/></a>
-            <a-menu slot="overlay">
-              <a-menu-item>
-                <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                  <a>删除</a>
-                </a-popconfirm>
-              </a-menu-item>
-            </a-menu>
-          </a-dropdown>
-        </span>
-
       </a-table>
     </div>
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
-    <AssInfo-modal ref="AssInfoModal" @ok="modalFormOk"></AssInfo-modal>
+    <Error-modal ref="ErrorModal" @ok="modalFormOk"></Error-modal>
 
-    <!-- 一对多表单区域 -->
-    <JeecgDemoTabsModal ref="jeecgDemoTabsModal" @ok="modalFormOk"></JeecgDemoTabsModal>
-
-    <!-- 高级查询区域 -->
-    <superQueryModal ref="superQueryModal" @ok="modalFormOk" @handleSuperQuery="handleSuperQuery"></superQueryModal>
   </a-card>
 </template>
 
 <script>
-  import AssInfoModal from './modules/AssInfoModal'
-  import SuperQueryModal from './modules/SuperQueryModal'
-  import JeecgDemoTabsModal from './modules/JeecgDemoTabsModal'
+  import ErrorModal from './modules/ErrorModal'
   import {filterObj} from '@/utils/util'
   import {deleteAction, getAction, postAction} from '@/api/manage'
   import moment from 'moment'
 /*  import {initDictOptions, filterDictText} from '@/components/dict/DictSelectUtil'*/
   export default {
-    name: "AssInfo",
+    name: "db",
     components: {
-      AssInfoModal,
-      SuperQueryModal,
-      JeecgDemoTabsModal,
+      ErrorModal,
     },
     data() {
       return {
-        description: '用户管理页面',
+        description: 'db巡查页面',
         // 查询条件
         queryParam: {},
         //字典数组缓存
@@ -167,12 +87,6 @@
             align: "center",
             dataIndex: 'status',
             scopedSlots: { customRender: 'status' },
-          },
-          {
-            title: '操作',
-            dataIndex: 'action',
-            align: "center",
-            scopedSlots: {customRender: 'action'},
           }
         ],
         //数据集
@@ -189,10 +103,10 @@
           showSizeChanger: true,
           total: 0
         },
-   /*     isorter: {
-          column: 'score',
+        isorter: {
+          column: 'entityno',
           order: 'desc',
-        },*/
+        },
         loading: false,
         selectedRowKeys: [],
         selectedRows: [],
@@ -209,25 +123,23 @@
     },
     methods: {
 
-  /*    exportXls(){
-        var SALEDATE = this.getQueryParams().SALEDATE.format('YYYY-MM-DD');
-        /!*let paramsStr = encodeURI(JSON.stringify());*!/
-        let url = `${window._CONFIG['domianURL']}/ws/salereport/exportXls?SALEDATE=${SALEDATE}`;
-        window.location.href = url;
-      },*/
-
-      loadData(arg) {
+      loadData() {
         //加载数据 若传入参数1则加载第一页的内容
-        if (arg === 1) {
-          this.ipagination.current = 1;
-        }
-       // var params = this.getQueryParams();//查询条件
-      /*  var SALEDATE = params.SALEDATE.toString();
-        alert(typeof  SALEDATE);*/
         getAction(this.url.list, null).then((res) => {
           if (res.success) {
             this.dataSource = res.result;
-            alert(JSON.stringify(res.result))
+            var errorModel = this.$refs.ErrorModal;
+            var datas = errorModel.dataSource;
+            datas.length = 0 ;
+            var jsons = res.result;
+            for (var i  in jsons) {
+              if(jsons[i].status=="error"){
+                datas.push(jsons[i])
+              }
+            }
+            if(datas.length>0){
+              errorModel.visible=true
+            }
           }
         })
       },
@@ -335,8 +247,7 @@
         this.$refs.jeecgDemoTabsModal.title = "编辑";
       },
       handleAdd: function () {
-        this.$refs.AssInfoModal.add();
-        this.$refs.AssInfoModal.title = "新增";
+        window.location.reload();
       },
       handleTableChange(pagination, filters, sorter) {
         //分页、排序、筛选变化时触发

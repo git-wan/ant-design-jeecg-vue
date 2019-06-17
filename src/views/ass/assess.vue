@@ -186,8 +186,8 @@
           if (res.success) {
             var  jsons = res.result.records;
             for(var json in jsons){
-             if(json.status == "已评定"){
-               jsons.remove(json);
+             if(jsons[json].status == "已评定"){
+               jsons.remove(jsons[json]);
              }
             }
             this.dataSource = jsons;

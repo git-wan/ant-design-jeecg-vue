@@ -1,56 +1,49 @@
 <template>
-  <a-modal
-    :title="title"
-    :width="800"
-    :visible="visible"
-    :confirmLoading="confirmLoading"
-    @ok="handleOk"
-    @cancel="handleCancel"
-    cancelText="关闭">
-    
-    <a-spin :spinning="confirmLoading">
+
       <a-form :form="form">
-      
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="评定项"
-          hasFeedback >
-          <a-input placeholder="请输入评定项类型" v-decorator="['asstype', {rules: [{required: true, message: '请输入负责人名称！'}, {max: 10,message: '最大长度为10！'}]}]" />
+          label="请假人">
+          <a-input placeholder="请输入请假人" v-decorator="['name', {}]" />
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="评分项"
-          hasFeedback >
-          <a-input placeholder="请输入评分项" v-decorator="['scoregroup', {rules: [{required: true, message: '请输入负责人名称！'}, {max: 10,message: '最大长度为10！'}]}]" />
+          label="请假天数">
+          <a-input-number v-decorator="[ 'days', {}]" />
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="评分项明细"
-          hasFeedback >
-          <a-textarea placeholder="请输入评分组明细" v-decorator="['scoreinfo', {rules: [{required: true, message: '请输入负责人名称！'}]}]" :autosize="{ minRows: 3, maxRows: 6 }"/>
+          label="开始时间">
+          <a-date-picker showTime format='YYYY-MM-DD' v-decorator="[ 'beginDate', {}]" />
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="评分"
-          hasFeedback >
-          <a-input-number :min="1" :max="100"  v-decorator="[ 'score', {rules: [{required: true, message: '请录入评分！'}],initialValue:1}]" />  <!--, {max: 10,message: '最大长度为10！'}-->
+          label="请假结束时间">
+          <a-date-picker showTime format='YYYY-MM-DD' v-decorator="[ 'endDate', {}]" />
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="请假原因">
+          <a-input placeholder="请输入请假原因" v-decorator="['reason', {}]" />
         </a-form-item>
       </a-form>
-    </a-spin>
-  </a-modal>
 </template>
 
 <script>
-  import { httpAction } from '@/api/manage'
-  import pick from 'lodash.pick'
+  import { httpAction,getAction } from '@/api/manage'
   import moment from "moment"
+  import pick from 'lodash.pick'
+  import JDate from '@/components/jeecg/JDate.vue'
 
   export default {
-    name: "AssInfoModal",
+    name: "JoaDemoModal",
+    components: { JDate },
+    props: ['formData'],
     data () {
       return {
         title:"操作",
@@ -68,14 +61,32 @@
         confirmLoading: false,
         form: this.$form.createForm(this),
         validatorRules:{
+        name:{},
+        days:{},
+        beginDate:{},
+        endDate:{},
+        reason:{},
+        bpmStatus:{},
         },
         url: {
-          add: "/ws/assinfo/add",
-          edit: "/ws/assinfo/edit",
+          queryById: "/test/joaDemo/queryById",
+          add: "/test/joaDemo/add",
+          edit: "/test/joaDemo/edit",
         },
       }
     },
     created () {
+      console.log("form start");
+      console.log("formdata",this.formData);
+      if(this.formData.dataId){
+        var params = {id:this.formData.dataId};//查询条件
+        getAction(this.url.queryById,params).then((res)=>{
+          if(res.success){
+            console.log("获取表单数据",res);
+            this.edit (res.result);
+          }
+        })
+      }
     },
     methods: {
       add () {
@@ -86,8 +97,12 @@
         this.model = Object.assign({}, record);
         this.visible = true;
         this.$nextTick(() => {
-          this.form.setFieldsValue(pick(this.model,'asstype','scoregroup','scoreinfo','score'))
+          this.form.setFieldsValue(pick(this.model,'name','days','reason','bpmStatus'))
+		  //时间格式化
+          this.form.setFieldsValue({beginDate:this.model.beginDate?moment(this.model.beginDate):null})
+          this.form.setFieldsValue({endDate:this.model.endDate?moment(this.model.endDate):null})
         });
+
       },
       close () {
         this.$emit('close');
@@ -109,6 +124,10 @@
                method = 'put';
             }
             let formData = Object.assign(this.model, values);
+            //时间格式化
+            formData.beginDate = formData.beginDate?formData.beginDate.format('YYYY-MM-DD HH:mm:ss'):null;
+            formData.endDate = formData.endDate?formData.endDate.format('YYYY-MM-DD HH:mm:ss'):null;
+            
             console.log(formData)
             httpAction(httpurl,formData,method).then((res)=>{
               if(res.success){

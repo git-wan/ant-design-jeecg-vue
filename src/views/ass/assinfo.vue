@@ -8,7 +8,7 @@
 
           <a-col :span="6">
             <a-form-item label="名称">
-              <a-input placeholder="请输入名称查询" v-model="queryParam.asstype"></a-input>
+              <a-input placeholder="请输入评定项类型" v-model="queryParam.asstype"></a-input>
             </a-form-item>
           </a-col>
      <!--     <a-col :span="6">
