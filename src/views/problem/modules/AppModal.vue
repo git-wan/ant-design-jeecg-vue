@@ -14,30 +14,47 @@
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="评定人"
+          label="应用维护标题"
           hasFeedback >
-          <a-input placeholder="请输入评定人姓名" v-decorator="['adjuster', {rules: [{required: true, message: '请评定人姓名！'}]}]" />
+          <a-input placeholder="请输入应用维护标题" v-decorator="['maintainname', {rules: [{required: true, message: '请评应用维护标题！'}]}]" />
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="评定对象"
+          label="维护开始时间"
           hasFeedback >
-          <a-input placeholder="请输入评定对象" v-decorator="['assobject', {rules: [{required: true, message: '请输入负责人名称！'}, {max: 10,message: '最大长度为10！'}]}]" />
+          <a-date-picker format="YYYY-MM-DD HH:mm:ss" :showTime="{ defaultValue: moment('00:00:00', 'HH:mm:ss') }" v-decorator="[ 'sdate', {rules: [{required: true, message: '维护开始时间！'}]}]" />
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="评定人类别"
+          label="维护结束时间"
           hasFeedback >
-          <a-input placeholder="请输入评定人类别" v-decorator="['adjtype', {rules: [{required: true, message: '请输入负责人名称！'}, {max: 10,message: '最大长度为10！'}]}]" />
+          <a-date-picker format="YYYY-MM-DD HH:mm:ss" :showTime="{ defaultValue: moment('00:00:00', 'HH:mm:ss') }" v-decorator="[ 'edate', {rules: [{required: true, message: '维护结束时间！'}]}]" />
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
           :wrapperCol="wrapperCol"
-          label="评定组"
+          label="维护人员"
           hasFeedback >
-          <a-input placeholder="请输入评定组" v-decorator="['assgroup', {rules: [{required: true, message: '请输入负责人名称！'}, {max: 10,message: '最大长度为10！'}]}]" />
+          <a-input placeholder="请输入维护人员" v-decorator="['maintainer', {rules: [{required: true, message: '请输入负责人名称！'}, {max: 50,message: '最大长度为50！'}]}]" />
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="维护内容"
+          hasFeedback >
+          <a-textarea placeholder="请输入维护内容" :autosize="{ minRows: 4, maxRows: 7 }" v-decorator="['maintainnote', {rules: [{required: true, message: '请输入维护内容！'}]}]"/>
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="维护结果"
+          hasFeedback >
+          <a-select placeholder="请选择维护结果" v-decorator="['maintainresult', {rules: [{required: true, message: '请选择维护结果！'}]}]" >
+            <a-select-option  value="维护成功">维护成功</a-select-option>
+            <a-select-option  value="维护失败">维护失败</a-select-option>
+          </a-select>
         </a-form-item>
       </a-form>
     </a-spin>
@@ -50,9 +67,10 @@
   import moment from "moment"
 
   export default {
-    name: "AssObjModal",
+    name: "AppModal",
     data () {
       return {
+        moment,
         title:"操作",
         visible: false,
         model: {},
@@ -70,8 +88,8 @@
         validatorRules:{
         },
         url: {
-          add: "/ws/assobj/add",
-          edit: "/ws/assobj/edit",
+          add: "/ws/apprecord/add",
+          edit: "/ws/apprecord/edit",
         },
       }
     },
@@ -86,7 +104,9 @@
         this.model = Object.assign({}, record);
         this.visible = true;
         this.$nextTick(() => {
-          this.form.setFieldsValue(pick(this.model,'adjuster','assobject','adjtype','assgroup'))
+          this.form.setFieldsValue(pick(this.model,'maintainname','assobject','sdate','edate','maintainer','maintainresult'))
+          this.form.setFieldsValue({sdate:this.model.sdate?moment(this.model.sdate,'YYYY-MM-DD HH:mm:ss'):null})
+          this.form.setFieldsValue({edate:this.model.edate?moment(this.model.edate,'YYYY-MM-DD HH:mm:ss'):null})
           //时间格式化
         });
       },
@@ -110,6 +130,8 @@
                method = 'put';
             }
             let formData = Object.assign(this.model, values);
+            formData.sdate = formData.sdate?formData.sdate.format('YYYY-MM-DD HH:mm:ss'):null;
+            formData.edate = formData.edate?formData.edate.format('YYYY-MM-DD HH:mm:ss'):null;
             //时间格式化
             console.log(formData)
             httpAction(httpurl,formData,method).then((res)=>{

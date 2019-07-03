@@ -187,16 +187,17 @@
           showSizeChanger: true,
           total: 0
         },
-   /*     isorter: {
-          column: 'score',
-          order: 'desc',
-        },*/
+        isorter: {
+          column: 'entityno',
+          order: 'asc',
+        },
         loading: false,
         selectedRowKeys: [],
         selectedRows: [],
         url: {
           list: "/ws/entity/list",
-          addEntProp:"/ws/entprop/addEntProp"
+          addEntProp:"/ws/entprop/addEntProp",
+          delete:"/ws/entity/delete"
         },
 
       }
@@ -266,7 +267,7 @@
         getAction(this.url.list, params).then((res) => {
           if (res.success) {
             this.dataSource = res.result.records;
-
+            this.ipagination.total = res.result.total;
           }
         })
       },

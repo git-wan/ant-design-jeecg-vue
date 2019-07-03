@@ -1,7 +1,9 @@
 <template>
   <a-card :bordered="false"><!--:bordered="false"-->
+    <a-spin tip="Loading..." :spinning="spinning">
+      <div class="spin-content">
     <div class="table-operator">
-      <a-button @click="searchReset" type="primary" icon="redo">刷新</a-button>
+      <a-button @click="loadData" type="primary" icon="search">巡查</a-button>
     </div>
     <!-- table区域-begin -->
     <div>
@@ -24,6 +26,8 @@
         </template>
       </a-table>
     </div>
+      </div>
+    </a-spin>
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
@@ -45,6 +49,7 @@
     },
     data() {
       return {
+        spinning:false,
         description: 'db巡查页面',
         // 查询条件
         queryParam: {},
@@ -117,13 +122,14 @@
       }
     },
     created() {
-      this.loadData();
+     // this.loadData();
       //初始化字典配置
      // this.initDictConfig();
     },
     methods: {
 
       loadData() {
+        this.spinning = true;
         //加载数据 若传入参数1则加载第一页的内容
         getAction(this.url.list, null).then((res) => {
           if (res.success) {
@@ -134,9 +140,11 @@
             var jsons = res.result;
             for (var i  in jsons) {
               if(jsons[i].status=="error"){
+          /*      alert(JSON.stringify(jsons[i]))*/
                 datas.push(jsons[i])
               }
             }
+            this.spinning = false;
             if(datas.length>0){
               errorModel.visible=true
             }
@@ -324,4 +332,11 @@
   .ant-btn {
     margin-left: 3px
   }
+
+  .spin-content{
+    border: 1px solid #91d5ff;
+    background-color: #e6f7ff;
+    padding: 30px;
+  }
+
 </style>

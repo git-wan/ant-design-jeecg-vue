@@ -215,14 +215,8 @@
     methods: {
 
       exportXls(){
-
-
-
-
-         SALEDATE = this.getQueryParams().SALEDATE.format('YYYY-MM-DD');
-
+        let SALEDATE = this.getQueryParams().SALEDATE.format('YYYY-MM-DD');
         /*let paramsStr = encodeURI(JSON.stringify());*/
-
         let url = `${window._CONFIG['domianURL']}/ws/salereport/exportXls?SALEDATE=${SALEDATE}`;
         window.location.href = url;
       },
@@ -238,7 +232,7 @@
         postAction(this.url.list, params).then((res) => {
           if (res.success) {
             this.dataSource = res.result;
-            alert(JSON.stringify(res.result))
+         /*   alert(JSON.stringify(res.result))*/
           }
         })
       },
@@ -297,7 +291,7 @@
       searchReset() {
         var that = this;
         that.queryParam = {}
-        that.loadData(1);
+     /*   that.loadData(1);*/
       },
       batchDel: function () {
         if (this.selectedRowKeys.length <= 0) {

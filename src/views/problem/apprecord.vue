@@ -8,7 +8,7 @@
 
           <a-col :span="6">
             <a-form-item label="名称">
-              <a-input placeholder="请输入评定项类型" v-model="queryParam.asstype"></a-input>
+              <a-input placeholder="请输入应用维护标题" v-model="queryParam.maintainname"></a-input>
             </a-form-item>
           </a-col>
      <!--     <a-col :span="6">
@@ -95,18 +95,12 @@
     <!-- 表单区域 -->
     <App-modal ref="AppModal" @ok="modalFormOk"></App-modal>
 
-    <!-- 一对多表单区域 -->
-    <JeecgDemoTabsModal ref="jeecgDemoTabsModal" @ok="modalFormOk"></JeecgDemoTabsModal>
 
-    <!-- 高级查询区域 -->
-    <superQueryModal ref="superQueryModal" @ok="modalFormOk" @handleSuperQuery="handleSuperQuery"></superQueryModal>
   </a-card>
 </template>
 
 <script>
   import AppModal from './modules/AppModal'
-  import SuperQueryModal from './modules/SuperQueryModal'
-  import JeecgDemoTabsModal from './modules/JeecgDemoTabsModal'
   import {filterObj} from '@/utils/util'
   import {deleteAction, getAction, postAction} from '@/api/manage'
 /*  import {initDictOptions, filterDictText} from '@/components/dict/DictSelectUtil'*/
@@ -114,8 +108,6 @@
     name: "apprecord",
     components: {
       AppModal,
-      SuperQueryModal,
-      JeecgDemoTabsModal,
     },
     data() {
       return {
@@ -137,24 +129,34 @@
             }
           },
           {
-            title: '评定项类型',
+            title: '应用维护标题',
             align: "center",
-            dataIndex: 'asstype'
+            dataIndex: 'maintainname'
           },
           {
-            title: '评分项',
+            title: '维护开始时间',
             align: "center",
-            dataIndex: 'scoregroup'
+            dataIndex: 'sdate'
           },
           {
-            title: '评分项明细',
+            title: '维护结束时间',
             align: "center",
-            dataIndex: 'scoreinfo'
+            dataIndex: 'edate'
           },
           {
-            title: '评分',
+            title: '维护人员',
             align: "center",
-            dataIndex: 'score'
+            dataIndex: 'maintainer'
+          },
+          {
+            title: '维护内容',
+            align: "center",
+            dataIndex: 'maintainnote'
+          },
+          {
+            title: '维护结果',
+            align: "center",
+            dataIndex: 'maintainresult'
           },
           {
             title: '操作',
@@ -178,16 +180,16 @@
           total: 0
         },
         isorter: {
-          column: 'score',
+          column: 'sdate',
           order: 'desc',
         },
         loading: false,
         selectedRowKeys: [],
         selectedRows: [],
         url: {
-          list: "/ws/assinfo/list",
-          delete: "/ws/assinfo/delete",
-          deleteBatch: "/ws/assinfo/deleteBatch",
+          list: "/ws/apprecord/list",
+          delete: "/ws/apprecord/delete",
+          deleteBatch: "/ws/apprecord/deleteBatch",
         },
 
       }
@@ -303,16 +305,16 @@
         });
       },
       handleEdit: function (record) {
-        this.$refs.AssInfoModal.edit(record);
-        this.$refs.AssInfoModal.title = "编辑";
+        this.$refs.AppModal.edit(record);
+        this.$refs.AppModal.title = "编辑";
       },
       onetomany: function (record) {
         this.$refs.jeecgDemoTabsModal.add();
         this.$refs.jeecgDemoTabsModal.title = "编辑";
       },
       handleAdd: function () {
-        this.$refs.AssInfoModal.add();
-        this.$refs.AssInfoModal.title = "新增";
+        this.$refs.AppModal.add();
+        this.$refs.AppModal.title = "新增";
       },
       handleTableChange(pagination, filters, sorter) {
         //分页、排序、筛选变化时触发

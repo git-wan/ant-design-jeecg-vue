@@ -192,10 +192,10 @@
           showSizeChanger: true,
           total: 0
         },
-   /*     isorter: {
-          column: 'score',
-          order: 'desc',
-        },*/
+        isorter: {
+          column: 'entityno',
+          order: 'asc',
+        },
         loading: false,
         selectedRowKeys: [],
         selectedRows: [],
@@ -231,6 +231,7 @@
         getAction(this.url.list, params).then((res) => {
           if (res.success) {
             this.dataSource = res.result.records;
+            /*alert(JSON.stringify(res.result.records))*/
             this.ipagination.total = res.result.total;
           }
         })

@@ -1,8 +1,9 @@
 <template>
   <a-card :bordered="false"><!--:bordered="false"-->
-
+    <a-spin tip="Loading..." :spinning="spinning">
+      <div class="spin-content">
     <div class="table-operator">
-      <a-button @click="searchReset" type="primary" icon="redo">刷新</a-button>
+      <a-button @click="loadData" type="primary" icon="search">巡查</a-button>
     </div>
 
     <!-- table区域-begin -->
@@ -41,6 +42,8 @@
 
       </a-table>
     </div>
+      </div>
+    </a-spin>
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
@@ -131,6 +134,7 @@
                column: 'score',
                order: 'desc',
              },*/
+        spinning:false,
         loading: false,
         selectedRowKeys: [],
         selectedRows: [],
@@ -140,7 +144,7 @@
       }
     },
     created() {
-      this.loadData();
+    /*  this.loadData();*/
       //初始化字典配置
       // this.initDictConfig();
     },
@@ -153,6 +157,7 @@
         //var params = this.getQueryParams();//查询条件
         /*  var SALEDATE = params.SALEDATE.toString();
           alert(typeof  SALEDATE);*/
+        this.spinning = true;
         getAction(this.url.list, null).then((res) => {
           // if (res.success) {
          // this.dataSource = res;
@@ -169,6 +174,7 @@
                 datas.push(jsons[i])
               }
             }
+            this.spinning = false;
             if(datas.length>0){
               errorModel.visible=true
             }
@@ -349,5 +355,10 @@
   /** Button按钮间距 */
   .ant-btn {
     margin-left: 3px
+  }
+  .spin-content{
+    border: 1px solid #91d5ff;
+    background-color: #e6f7ff;
+    padding: 30px;
   }
 </style>

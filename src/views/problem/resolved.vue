@@ -114,7 +114,7 @@
   import moment from 'moment'
   /*  import {initDictOptions, filterDictText} from '@/components/dict/DictSelectUtil'*/
   export default {
-    name: 'probrecord',
+    name: 'resolved',
     components: {
       StepForm,
       ProbModal,

@@ -1,10 +1,12 @@
 <template>
   <a-card :bordered="false"><!--:bordered="false"-->
-
+    <a-spin tip="Loading..." :spinning="spinning">
+      <div class="spin-content">
     <div class="table-operator">
-      <a-button @click="searchReset" type="primary" icon="redo">刷新</a-button>
+      <a-button @click="loadData" type="primary" icon="search">巡查</a-button>
     </div>
     <!-- table区域-begin -->
+
     <div>
       <a-table
         ref="table"
@@ -22,23 +24,11 @@
           slot-scope="status">
           <a-badge :status="status" :text="status | statusFilter"/>
         </template>
-        <span slot="action" slot-scope="text, record">
-          <a @click="handleEdit(record)">编辑</a>
 
-          <a-divider type="vertical"/>
-          <a-dropdown>
-            <a class="ant-dropdown-link">更多 <a-icon type="down"/></a>
-            <a-menu slot="overlay">
-              <a-menu-item>
-                <a-popconfirm title="确定删除吗?" @confirm="() => handleDelete(record.id)">
-                  <a>删除</a>
-                </a-popconfirm>
-              </a-menu-item>
-            </a-menu>
-          </a-dropdown>
-        </span>
       </a-table>
     </div>
+      </div>
+    </a-spin>
     <!-- table区域-end -->
 
     <!-- 表单区域 -->
@@ -60,6 +50,7 @@
     },
     data() {
       return {
+        spinning:false,
         description: 'ip',
         // 查询条件
         queryParam: {},
@@ -103,12 +94,12 @@
             dataIndex: 'status',
             scopedSlots: { customRender: 'status' }
           },
-          {
+    /*      {
             title: '操作',
             dataIndex: 'action',
             align: 'center',
             scopedSlots: { customRender: 'action' }
-          }
+          }*/
         ],
         //数据集
         dataSource: [],
@@ -124,10 +115,10 @@
           showSizeChanger: true,
           total: 0
         },
-        /*     isorter: {
-               column: 'score',
+             isorter: {
+               column: 'entityno',
                order: 'desc',
-             },*/
+             },
         loading: false,
         selectedRowKeys: [],
         selectedRows: [],
@@ -137,14 +128,14 @@
       }
     },
     created() {
-      this.loadData()
+/*      this.loadData()*/
       //初始化字典配置
       // this.initDictConfig();
     },
     methods: {
       loadData() {
         //加载数据 若传入参数1则加载第一页的内容
-
+        this.spinning = true;
         getAction(this.url.list, null).then((res) => {
       /*    // if (res.success) {
           this.dataSource = res
@@ -164,6 +155,7 @@
                 datas.push(jsons[i])
               }
             }
+            this.spinning = false;
             if(datas.length>0){
               errorModel.visible=true
             }
@@ -305,7 +297,7 @@
       statusFilter(status) {
         const statusMap = {
           'success': 'OK',
-          'failed': 'ERROR'
+          'error': 'ERROR'
         }
         return statusMap[status]
       }
@@ -352,5 +344,10 @@
   /** Button按钮间距 */
   .ant-btn {
     margin-left: 3px
+  }
+  .spin-content{
+    border: 1px solid #91d5ff;
+    background-color: #e6f7ff;
+    padding: 30px;
   }
 </style>

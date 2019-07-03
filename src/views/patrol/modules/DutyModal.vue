@@ -281,9 +281,11 @@
         this.edit({})
       },
       edit(record) {
+
         this.form.resetFields()
         this.model = Object.assign({}, record)
-        if(record.length>0){
+        var len = Object.keys(record).length;
+        if(len>0){
           this.upshint1 = record.upshint1;
           this.upshint2 = record.upshint2;
           this.upshint3 = record.upshint3;
