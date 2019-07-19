@@ -6,7 +6,7 @@
       <a-form layout="inline">
         <a-row :gutter="24">
 
-          <a-col :span="6">
+          <a-col :md="6" :sm="12">
             <a-form-item label="名称">
               <a-input placeholder="请输入应用维护标题" v-model="queryParam.maintainname"></a-input>
             </a-form-item>

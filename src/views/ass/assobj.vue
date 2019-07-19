@@ -6,17 +6,17 @@
       <a-form layout="inline">
         <a-row :gutter="24">
 
-          <a-col :span="6">
+          <a-col :sm="6" :md="12">
             <a-form-item label="评定人">
               <a-input placeholder="请输入名称查询" v-model="queryParam.adjuster"></a-input>
             </a-form-item>
           </a-col>
-          <a-col :span="6">
+          <a-col :sm="6" :md="12">
             <a-form-item label="评定对象">
               <a-input placeholder="请输入名称查询" v-model="queryParam.assobject"></a-input>
             </a-form-item>
           </a-col>
-          <a-col :span="6">
+          <a-col :sm="6" :md="12">
             <a-form-item label="评定组">
               <!--<DictSelectTag v-model="queryParam.assgroup" placeholder="请输入用户性别" dictCode="sex"/>-->
               <a-select v-model="queryParam.assgroup" placeholder="请输入评定组">

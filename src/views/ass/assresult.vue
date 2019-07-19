@@ -6,7 +6,7 @@
       <a-form layout="inline">
         <a-row :gutter="24">
 
-          <a-col :span="6">
+          <a-col :sm="6" :md="12">
             <a-form-item label="评定类型">
               <a-select v-model="queryParam.planname" placeholder="请输入评定计划名称">
                 <!-- <a-select-option value=""> 请选择</a-select-option>-->

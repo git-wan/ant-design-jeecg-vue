@@ -109,7 +109,7 @@
           :wrapperCol="wrapperCol"
           label="市电1电压"
           hasFeedback>
-          <a-input-number :min="1" :max="100" placeholder="" v-decorator="['cityv1' ]"/>
+          <a-input-number :min="1" :max="300" placeholder="" v-decorator="['cityv1' ]"/>
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
@@ -123,7 +123,7 @@
           :wrapperCol="wrapperCol"
           label="市电2电压"
           hasFeedback>
-          <a-input-number :min="1" :max="100" placeholder="" v-decorator="['cityv2' ]"/>
+          <a-input-number :min="1" :max="300" placeholder="" v-decorator="['cityv2' ]"/>
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
@@ -137,7 +137,7 @@
           :wrapperCol="wrapperCol"
           label="ups1电压"
           hasFeedback>
-          <a-input-number :min="1" :max="100" placeholder="" v-decorator="['upsv1' ]"/>
+          <a-input-number :min="1" :max="300" placeholder="" v-decorator="['upsv1' ]"/>
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
@@ -167,7 +167,7 @@
           :wrapperCol="wrapperCol"
           label="ups2电压"
           hasFeedback>
-          <a-input-number :min="1" :max="100" placeholder="" v-decorator="['upsv2' ]"/>
+          <a-input-number :min="1" :max="300" placeholder="" v-decorator="['upsv2' ]"/>
         </a-form-item>
         <a-form-item
           :labelCol="labelCol"
@@ -198,7 +198,7 @@
           :wrapperCol="wrapperCol"
           label="ups3电压"
           hasFeedback>
-          <a-input-number :min="1" :max="100" placeholder="" v-decorator="['upsv3' ]"/>
+          <a-input-number :min="1" :max="300" placeholder="" v-decorator="['upsv3' ]"/>
         </a-form-item>
         <a-form-item
         :labelCol="labelCol"

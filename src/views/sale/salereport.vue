@@ -6,7 +6,7 @@
       <a-form layout="inline">
         <a-row :gutter="24">
 
-          <a-col :span="6">
+          <a-col :sm="6" :md="12">
             <a-form-item label="时间">
               <a-date-picker :disabledDate="disabledDate"   v-model="queryParam.SALEDATE" />
             </a-form-item>

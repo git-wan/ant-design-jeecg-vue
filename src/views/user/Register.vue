@@ -3,17 +3,16 @@
     <h3><span>注册</span></h3>
     <a-form ref="formRegister" :autoFormCreate="(form)=>{this.form = form}" id="formRegister">
       <a-form-item
-        fieldDecoratorId="email"
-        :fieldDecoratorOptions="{rules: [{ required: true, type: 'email', message: '请输入邮箱地址' }], validateTrigger: ['change', 'blur']}">
-
-        <a-input size="large" type="text" placeholder="邮箱"></a-input>
+        fieldDecoratorId="username"
+        :fieldDecoratorOptions="{rules: [{ required: true, message: '用户名不能为空'}, { validator: this.checkUsername }], validateTrigger: ['change', 'blur']}">
+        <a-input size="large" type="text" autocomplete="false" placeholder="请输入用户名"></a-input>
       </a-form-item>
 
       <a-popover placement="rightTop" trigger="click" :visible="state.passwordLevelChecked">
         <template slot="content">
-          <div :style="{ width: '240px' }" >
+          <div :style="{ width: '240px' }">
             <div :class="['user-register', passwordLevelClass]">强度：<span>{{ passwordLevelName }}</span></div>
-            <a-progress :percent="state.percent" :showInfo="false" :strokeColor=" passwordLevelColor " />
+            <a-progress :percent="state.percent" :showInfo="false" :strokeColor=" passwordLevelColor "/>
             <div style="margin-top: 10px;">
               <span>请至少输入 6 个字符。请不要使用容易被猜到的密码。</span>
             </div>
@@ -21,21 +20,25 @@
         </template>
         <a-form-item
           fieldDecoratorId="password"
-          :fieldDecoratorOptions="{rules: [{ required: true, message: '至少6位密码，区分大小写'}, { validator: this.handlePasswordLevel }], validateTrigger: ['change', 'blur']}">
+          :fieldDecoratorOptions="{rules: [{ required: false}, { validator: this.handlePasswordLevel }], validateTrigger: ['change', 'blur']}">
           <a-input size="large" type="password" @click="handlePasswordInputClick" autocomplete="false" placeholder="至少6位密码，区分大小写"></a-input>
         </a-form-item>
       </a-popover>
 
       <a-form-item
         fieldDecoratorId="password2"
-        :fieldDecoratorOptions="{rules: [{ required: true, message: '至少6位密码，区分大小写' }, { validator: this.handlePasswordCheck }], validateTrigger: ['change', 'blur']}">
+        :fieldDecoratorOptions="{rules: [{ required: true, message: '至少8位密码，区分大小写' }, { validator: this.handlePasswordCheck }], validateTrigger: ['change', 'blur']}">
 
         <a-input size="large" type="password" autocomplete="false" placeholder="确认密码"></a-input>
       </a-form-item>
-
+      <a-form-item
+        fieldDecoratorId="email"
+        :fieldDecoratorOptions="{rules: [{ required: true, type: 'email', message: '请输入正确的邮箱地址' }, { validator: this.handleEmailCheck }], validateTrigger: ['change', 'blur']}">
+        <a-input size="large" type="text" placeholder="邮箱"></a-input>
+      </a-form-item>
       <a-form-item
         fieldDecoratorId="mobile"
-        :fieldDecoratorOptions="{rules: [{ required: true, message: '请输入正确的手机号', pattern: /^1[3456789]\d{9}$/ }, { validator: this.handlePhoneCheck } ], validateTrigger: ['change', 'blur'] }">
+        :fieldDecoratorOptions="{rules: [{ required: true, pattern: /^1[3456789]\d{9}$/, message: '请输入正确的手机号' }, { validator: this.handlePhoneCheck } ], validateTrigger: ['change', 'blur'] }">
         <a-input size="large" placeholder="11 位手机号">
           <a-select slot="addonBefore" size="large" defaultValue="+86">
             <a-select-option value="+86">+86</a-select-option>
@@ -51,7 +54,7 @@
             <a-input style="width: 80%" size="large" placeholder="11 位手机号"></a-input>
           </a-input-group>-->
 
-      <a-row :gutter="16">
+    <!--  <a-row :gutter="16">
         <a-col class="gutter-row" :span="16">
           <a-form-item
             fieldDecoratorId="captcha"
@@ -69,7 +72,7 @@
             @click.stop.prevent="getCaptcha"
             v-text="!state.smsSendBtn && '获取验证码'||(state.time+' s')"></a-button>
         </a-col>
-      </a-row>
+      </a-row>-->
 
       <a-form-item>
         <a-button
@@ -89,8 +92,10 @@
 </template>
 
 <script>
-  import { mixinDevice } from '@/utils/mixin.js'
-  import { getSmsCaptcha } from '@/api/login'
+  import {mixinDevice} from '@/utils/mixin.js'
+  import {getSmsCaptcha} from '@/api/login'
+  import {getAction, postAction} from '@/api/manage'
+  import {checkOnlyUser,checkRoleCode} from '@/api/api'
 
   const levelNames = {
     0: '低',
@@ -112,8 +117,7 @@
   }
   export default {
     name: "Register",
-    components: {
-    },
+    components: {},
     mixins: [mixinDevice],
     data() {
       return {
@@ -131,22 +135,48 @@
       }
     },
     computed: {
-      passwordLevelClass () {
+      passwordLevelClass() {
         return levelClass[this.state.passwordLevel]
       },
-      passwordLevelName () {
+      passwordLevelName() {
         return levelNames[this.state.passwordLevel]
       },
-      passwordLevelColor () {
+      passwordLevelColor() {
         return levelColor[this.state.passwordLevel]
       }
     },
     methods: {
-
-      handlePasswordLevel (rule, value, callback) {
-
+      checkUsername(rule, value, callback) {
+        var params = {
+          username: value,
+        };
+        checkOnlyUser(params).then((res) => {
+          if (res.success) {
+            callback()
+          } else {
+            callback("用户名已存在!")
+          }
+        })
+      },
+      handleEmailCheck(rule, value, callback) {
+        var params = {
+          email: value,
+        };
+        checkOnlyUser(params).then((res) => {
+          if (res.success) {
+            callback()
+          } else {
+            callback("邮箱已存在!")
+          }
+        })
+      },
+      handlePasswordLevel(rule, value, callback) {
+        //(?=.*[~!@#$%^&*()_+`\-={}:";'<>?,./])
         let level = 0
-
+        let reg = /^(?=.*[a-zA-Z])(?=.*\d).{6,}$/;
+        if (!reg.test(value)) {
+          callback(new Error('密码由6位数字、大小写字母组成!'))
+        }
         // 判断这个字符串中有没有数字
         if (/[0-9]/.test(value)) {
           level++
@@ -174,9 +204,9 @@
         }
       },
 
-      handlePasswordCheck (rule, value, callback) {
+      handlePasswordCheck(rule, value, callback) {
         let password = this.form.getFieldValue('password')
-        console.log('value', value)
+        //console.log('value', value)
         if (value === undefined) {
           callback(new Error('请输入密码'))
         }
@@ -186,15 +216,20 @@
         callback()
       },
 
-      handlePhoneCheck (rule, value, callback) {
-       console.log('handlePhoneCheck, rule:', rule)
-        console.log('handlePhoneCheck, value', value)
-        console.log('handlePhoneCheck, callback', callback)
-
-       callback()
+      handlePhoneCheck(rule, value, callback) {
+        var params = {
+          phone: value,
+        };
+        checkOnlyUser(params).then((res) => {
+          if (res.success) {
+            callback()
+          } else {
+            callback("手机号已存在!")
+          }
+        })
       },
 
-      handlePasswordInputClick () {
+      handlePasswordInputClick() {
         if (!this.isMobile()) {
           this.state.passwordLevelChecked = true
           return;
@@ -203,9 +238,24 @@
       },
 
       handleSubmit() {
+
         this.form.validateFields((err, values) => {
           if (!err) {
-            this.$router.push({ name: 'registerResult', params: {...values} })
+            var register = {
+              username: values.username,
+              password: values.password,
+              email: values.email,
+              phone: values.mobile,
+             /* smscode: values.captcha*/
+            };
+
+            postAction("/sys/user/register", register).then((res) => {
+              if (!res.success) {
+                this.registerFailed(res.message)
+              } else {
+                this.$router.push({name: 'registerResult', params: {...values}})
+              }
+            })
           }
         })
       },
@@ -213,12 +263,9 @@
       getCaptcha(e) {
         e.preventDefault()
         let that = this
-
-        this.form.validateFields(['mobile'], {force: true},
-          (err, values) => {
+        this.form.validateFields(['mobile'], {force: true}, (err, values) => {
             if (!err) {
               this.state.smsSendBtn = true;
-
               let interval = window.setInterval(() => {
                 if (that.state.time-- <= 0) {
                   that.state.time = 60;
@@ -226,16 +273,17 @@
                   window.clearInterval(interval);
                 }
               }, 1000);
-
               const hide = this.$message.loading('验证码发送中..', 0);
-
-              getSmsCaptcha({mobile: values.mobile}).then(res => {
-                setTimeout(hide, 2500);
-                this.$notification['success']({
-                  message: '提示',
-                  description: '验证码获取成功，您的验证码为：' + res.result.captcha,
-                  duration: 8
-                })
+              const params = {
+                mobile: values.mobile,
+                smsmode: "1"
+              };
+              postAction("/sys/sms", params).then((res) => {
+                if (!res.success) {
+                  this.registerFailed(res.message);
+                  setTimeout(hide, 0);
+                }
+                setTimeout(hide, 500);
               }).catch(err => {
                 setTimeout(hide, 1);
                 clearInterval(interval);
@@ -247,6 +295,14 @@
           }
         );
       },
+      registerFailed(message) {
+        this.$notification['error']({
+          message: "注册失败",
+          description: message,
+          duration: 2,
+        });
+
+      },
       requestFailed(err) {
         this.$notification['error']({
           message: '错误',
@@ -257,7 +313,7 @@
       },
     },
     watch: {
-      'state.passwordLevel' (val) {
+      'state.passwordLevel'(val) {
         console.log(val)
 
       }
@@ -279,7 +335,6 @@
       color: #52c41a;
     }
 
-
   }
 
   .user-layout-register {
@@ -295,8 +350,6 @@
       font-size: 16px;
       margin-bottom: 20px;
     }
-
-
 
     .getCaptcha {
       display: block;

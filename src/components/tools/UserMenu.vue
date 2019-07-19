@@ -22,17 +22,10 @@
             <span>账户设置</span>
           </router-link>
         </a-menu-item>
-       <!-- <a-menu-item key="2" disabled>
-          <a-icon type="setting"/>
-          <span>测试</span>
+        <a-menu-item key="2" @click="updatePassword">
+            <a-icon type="setting"/>
+            <span>修改密码</span>
         </a-menu-item>
-        <a-menu-divider/>
-        <a-menu-item key="3">
-          <a href="javascript:;" @click="handleLogout">
-            <a-icon type="logout"/>
-            <span>退出登录</span>
-          </a>
-        </a-menu-item>-->
       </a-menu>
     </a-dropdown>
     <span class="action">
@@ -41,6 +34,7 @@
         <span v-if="isDesktop()">&nbsp;退出登录</span>
       </a>
     </span>
+    <user-password ref="userPassword"></user-password>
   </div>
 </template>
 
@@ -48,11 +42,13 @@
   import HeaderNotice from './HeaderNotice'
   import { mapActions, mapGetters } from 'vuex'
   import { mixinDevice } from '@/utils/mixin.js'
+  import UserPassword from './UserPassword'
   export default {
     name: "UserMenu",
     mixins: [mixinDevice],
     components: {
-      HeaderNotice
+      HeaderNotice,
+      UserPassword
     },
     props: {
       theme: {
@@ -63,14 +59,17 @@
     },
     methods: {
       ...mapActions(["Logout"]),
-      ...mapGetters(["nickname", "avatar"]),
+      ...mapGetters(["nickname", "avatar","userInfo"]),
       getAvatar(){
         console.log('url = '+ window._CONFIG['imgDomainURL']+"/"+this.avatar())
         return window._CONFIG['imgDomainURL']+"/"+this.avatar()
       },
+      updatePassword(){
+        let username = this.userInfo().username;
+        this.$refs.userPassword.show(username);
+      },
       handleLogout() {
         const that = this
-
         this.$confirm({
           title: '提示',
           content: '真的要注销登录吗 ?',

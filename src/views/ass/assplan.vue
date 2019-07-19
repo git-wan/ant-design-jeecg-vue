@@ -6,7 +6,7 @@
       <a-form layout="inline">
         <a-row :gutter="24">
 
-          <a-col :span="8">
+          <a-col :sm="6" :md="12">
             <a-form-item label="评定计划名称">
               <a-input placeholder="请输入名称查询" v-model="queryParam.planname"></a-input>
             </a-form-item>
